@@ -25,78 +25,17 @@ class MENU:
     def __init__(self, init_window_name):
         self.init_window_name = init_window_name
 
+    
     @staticmethod
     def callback1():
-        print("--- 获取源码 ---")
-        showwarning("warning", "Please follow the GPL3.0")
-        webbrowser.open("https://github.com/ahhlyy/lidar_project")
-
-    @staticmethod
-    def callback2():
         print("--- 退出 ---")
         sys.exit()
-
-    def callback3(self):
-        print("--- 刷新串口 ---")
-
+    
     @staticmethod
-    def callback4():
-        print("--- 截图 ---")
-        window_capture()
-
-    @staticmethod
-    def callback5():
-        config = version.config()
-        if config['power'] == 'Professional':
-            print("--- 温度折线图 ---")
-            new_win = lidar_serial()
-            new_win.createTempWindow()
-        else:
-            showerror("权限不足", "请升级专业版")
-            new_win = lidar_serial()
-            new_win.power()
-
-    @staticmethod
-    def callback6():
-        config = version.config()
-        if config['power'] == 'Professional':
-            print("--- 湿度折线图 ---")
-            new_win = lidar_serial()
-            new_win.createHumWindow()
-        else:
-            showerror("权限不足", "请升级专业版")
-            new_win = lidar_serial()
-            new_win.power()
-
-    @staticmethod
-    def callback7():
-        print("--- 帮助 ---")
-        os.startfile("data\\readme.txt")
-
-    @staticmethod
-    def callback8():
-        print("--- 关于 ---")
-        version.info()
-
-    @staticmethod
-    def callback9():
-        print("--- 更新检测 ---")
-        import requests
-        ver = requests.get('http://xxx.xxx.xxx.xx/download/open-source-project/zshSerial/version.txt')
-        print(ver.text)
-        config = version.config()
-        if "lastest: v{}".format(config['version']) == ver.text:
-            versionCheck = "当前版本：v{} 为最新版".format(config['version'])
-            showinfo('更新检测', versionCheck)
-        else:
-            versionCheck = "当前版本：v{} 版本过低，请及时更新".format(config['version'])
-            showwarning('更新检测', versionCheck)
-            version.update()
-
-    @staticmethod
-    def callback10():
-        print("--- 博客教程 ---")
-        webbrowser.open("http://t.csdn.cn/Fc538")
+    def callback14():
+        print("--- 折线图 ---")
+        new_win = lidar_serial()
+        new_win.createRestoreWindow()
 
 
 class lidar_serial:
@@ -117,7 +56,7 @@ class lidar_serial:
         width = self.window.winfo_screenwidth()
         height = self.window.winfo_screenheight()
         print(width, height)
-        win = '{}x{}+{}+{}'.format(880, 500, width // 3, height // 5)  # {}x{} 窗口大小，+10 +10 定义窗口弹出时的默认展示位置
+        win = '{}x{}+{}+{}'.format(500, 700, width // 3, height // 5)  # {}x{} 窗口大小，+10 +10 定义窗口弹出时的默认展示位置
         self.window.geometry(win)
         self.window.resizable(False, False)
 
@@ -135,28 +74,21 @@ class lidar_serial:
         menu = MENU(self.window)
         filemenu1 = Menu(menubar, tearoff=False)  # 在顶级菜单menubar下, 创建一个子菜单filemenu1
         filemenu2 = Menu(menubar, tearoff=False)  # 在顶级菜单menubar下, 创建一个子菜单filemenu2
-        filemenu3 = Menu(menubar, tearoff=False)  # 在顶级菜单menubar下, 创建一个子菜单filemenu3
-        menubar.add_cascade(label="文件", menu=filemenu1)  # 为子菜单filemenu1取个名字
+        menubar.add_cascade(label="配置", menu=filemenu1)  # 为子菜单filemenu1取个名字
         menubar.add_cascade(label="工具", menu=filemenu2)  # 为子菜单filemenu2取个名字
-        menubar.add_cascade(label="折线图", menu=filemenu3)  # 为子菜单filemenu3取个名字
-        menubar.add_command(label="帮助", command=menu.callback7)
-        menubar.add_command(label="关于", command=menu.callback8)
-        filemenu1.add_command(label="更新检测", command=menu.callback9)  # 为子菜单filemenu1添加选项，取名"更新检测"
-        filemenu1.add_command(label="获取源码", command=menu.callback1)  # 为子菜单filemenu1添加选项，取名"获取源码"
-        filemenu1.add_command(label="博客教程", command=menu.callback10)  # 为子菜单filemenu1添加选项，取名"博客教程"
-        filemenu1.add_separator()  # 添加一条分割线
-        filemenu1.add_command(label="退出", command=menu.callback2)  # 为子菜单filemenu1添加选项，取名"关闭"
-        filemenu2.add_command(label="刷新串口", command=self.cleanSerial)  # 为子菜单filemenu2添加选项，取名"刷新串口"
-        filemenu2.add_command(label="截图", command=menu.callback4)  # 为子菜单filemenu2添加选项，取名"截图"
-        filemenu3.add_command(label="温度图", command=menu.callback5)  # 为子菜单filemenu2添加选项，取名"温度图"
-        filemenu3.add_command(label="湿度图", command=menu.callback6)  # 为子菜单filemenu2添加选项，取名"湿度图"
+        
+        #filemenu1.add_separator()  # 添加一条分割线
+        #filemenu1.add_command(label="退出", command=menu.callback1)  # 为子菜单filemenu1添加选项，取名"关闭"
+        filemenu2.add_command(label="测距折线图", command=menu.callback14)  # 为子菜单filemenu3添加选项，取名"测距图1"
 
         ############################################
         # 串口设置子菜单 1
         ############################################
+        #separator = ttk.Separator(self.window, orient='horizontal')
+        #separator.pack(padx=10, pady=10)
 
         # 串口设置
-        group_serial_set = LabelFrame(self.window, text="串口设置")
+        group_serial_set = LabelFrame(self.window, text="串口设置", relief='flat')
         group_serial_set.grid(row=0, padx=10, pady=10)
 
         serial_label = Label(group_serial_set, text="串口号")
@@ -221,8 +153,8 @@ class lidar_serial:
         serial_btn.grid(row=1, column=0, padx=55, pady=10)
 
         # 数据显示
-        self.txt = Text(self.window, width=70, height=26.5, font=("SimHei", 10))
-        self.txt.grid(row=0, rowspan=3, column=1, padx=8, pady=10, sticky='s')
+        #self.txt = Text(self.window, width=70, height=26.5, font=("SimHei", 10))
+        #self.txt.grid(row=0, rowspan=3, column=1, padx=8, pady=10, sticky='s')
 
         # 串口子菜单设置初值
         self.bound_combobox.set(self.bound_combobox['value'][4])
@@ -453,18 +385,35 @@ class lidar_serial:
         # 窗口循环显示
         new_window.mainloop()
 
-    def power(self):
+    def createBaudWindow(self):
+        """
+        创建新的窗口
+        """
         new_window = self.window
-        new_window.title("温湿度串口调试助手")
-        new_window.geometry("450x520+{}+{}".format(self.window.winfo_screenwidth() // 3, self.window.winfo_screenheight() // 5))
-        frame = Frame(new_window, bg="#ffffff")
-        frame.place(x=0, y=450, width=450, height=70)
-        imgShow = PhotoImage(file='data\\blog.gif', master=new_window)
-        # https://cdkm.com/cn/png-to-gif
-        Label(new_window, image=imgShow).place(x=0, y=0, width=450, height=450)
-        Label(new_window, text="扫码升级", bg="#ffffff", font='宋体', anchor="center").place(x=190, y=470)
+        new_window.title("修改波特率折线图")
+        new_window.geometry("720x480")
+
         new_window.mainloop()
 
+    def createidWindow(self):
+        """
+        创建新的窗口
+        """
+        new_window = self.window
+        new_window.title("修改id折线图")
+        new_window.geometry("720x480")
+
+        new_window.mainloop()
+
+    def createRestoreWindow(self):
+        """
+        创建新的窗口
+        """
+        new_window = self.window
+        new_window.title("恢复出厂折线图")
+        new_window.geometry("720x480")
+
+        new_window.mainloop()
 
 # if __name__ == "__main__":
 #     mySerial = lidar_serial()
