@@ -1,36 +1,48 @@
 import tkinter as tk
-from tkinter import ttk
+import serial
+import modbus_tk
+import modbus_tk.defines as cst
+import serial.tools.list_ports
+from modbus_tk import modbus_rtu
 
+def scan_serial_ports():
+    """扫描可用的串口并返回列表"""
+    ports = list(serial.tools.list_ports.comports())
+    result = []
+    for port in ports:
+        result.append(port.device)
+    return result
+
+def select_port():
+    """从下拉列表中选择串口"""
+    port = port_var.get()
+    if port:
+        # 建立Modbus从站
+        master = modbus_rtu.RtuMaster(serial.Serial(port, baudrate=115200, bytesize=8, parity='N', stopbits=1))
+        master.set_timeout(5.0)
+        master.set_verbose(True)
+        # 读取Modbus数据
+        try:
+            response = master.execute(1, cst.READ_HOLDING_REGISTERS, 0, 1)
+            print("Modbus response:", response)
+        except Exception as exc:
+            print("Modbus error:", exc)
+    else:
+        print("Please select a port")
+
+# 创建主窗口
 root = tk.Tk()
+root.title("Modbus Scanner")
 
-# 添加第一个分割线
-sep1 = ttk.Separator(root, orient="horizontal")
-sep1.pack(fill="x", padx=10, pady=10)
+# 创建下拉列表
+port_var = tk.StringVar()
+port_list = scan_serial_ports()
+port_menu = tk.OptionMenu(root, port_var, *port_list)
+port_menu.pack()
 
-# 添加一些其他小部件
-label1 = tk.Label(root, text="Label 1")
-label1.pack(padx=10, pady=10)
+# 创建按钮
+btn_scan = tk.Button(root, text="Scan", command=select_port)
+btn_scan.pack()
 
-button1 = tk.Button(root, text="Button 1")
-button1.pack(padx=10, pady=10)
-
-# 添加第二个分割线
-sep2 = ttk.Separator(root, orient="horizontal")
-sep2.pack(fill="x", padx=10, pady=10)
-
-# 添加一些其他小部件
-label2 = tk.Label(root, text="Label 2")
-label2.pack(padx=10, pady=10)
-
-button2 = tk.Button(root, text="Button 2")
-button2.pack(padx=10, pady=10)
-
-
-
-e = tk.Entry(root, show='*') #输入框，输入时显示*
-e.pack()
-
-t = tk.Text(root,height=2)  #创建文本框，用户可输入内容
-t.pack()
-
+# 运行主循环
 root.mainloop()

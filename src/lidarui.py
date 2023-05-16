@@ -3,12 +3,24 @@ from tkinter import ttk
 import tkinter as tk
 import serial
 import serial.tools.list_ports
+import threading
+import modbus_tk.defines as cst
+from modbus_tk import modbus_rtu
+import time
+import numpy as np
+import sys
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadBuilder
+
+Baudrate = [9600, 115200, 19200, 38400, 57600]
 
 
 class lidar_serial:
     def __init__(self):
-        self.window = Tk() # 实例化出一个父窗口
+        self.window = Tk()  # 实例化出一个父窗口
         self.com = serial.Serial()
+        self.master = serial.Serial()
 
     def lidarui(self):
         # 窗口配置
@@ -30,14 +42,8 @@ class lidar_serial:
         self.serial_combobox['value'] = lidar_serial.getSerialPort()
         self.serial_combobox.grid(row=0, column=1, padx=0, pady=0)
 
-        serial_btn = Button(group_serial_set, text="连接", width=8, command=self.connect)
-        serial_btn.grid(row=0, column=2, padx=10, pady=0, sticky=E)
-
-        # 在LabelFrame下面添加一个Canvas控件
-        #canvas = tk.Canvas(self.window, height=2)
-        #canvas.grid(row=1, column=0, padx=10, pady=10, sticky=W)
-        # 在Canvas控件中绘制一条直线
-        #canvas.create_line(0, 3, 400, 3, fill="gray")
+        self.serial_btn = Button(group_serial_set, text="连接", width=8, command=self.connectSerialPort)
+        self.serial_btn.grid(row=0, column=2, padx=10, pady=0, sticky=E)
         
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
@@ -50,11 +56,14 @@ class lidar_serial:
         distance_label = Label(group_distance_display, text="距离(cm):")
         distance_label.grid(row=0, column=0, padx=0, pady=0, sticky=W)
 
-        distance_label = Label(group_distance_display, text="强度:")
-        distance_label.grid(row=0, column=1, padx=140, pady=0, sticky=E)
+        strength_label = Label(group_distance_display, text="强度:")
+        strength_label.grid(row=0, column=1, padx=140, pady=0, sticky=E)
 
-        display_label = Label(group_distance_display, text="   ", relief='flat')
-        display_label.grid(row=1, column=0)
+        self.displaydis_label = Label(group_distance_display, text="   ", relief='flat')
+        self.displaydis_label.grid(row=1, column=0)
+   
+        self.displaystr_label = Label(group_distance_display, text="   ", relief='flat')
+        self.displaystr_label.grid(row=1, column=1)
 
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
@@ -153,8 +162,51 @@ class lidar_serial:
                 pass
         return port
 
-    def connect(self):
-        print('Connecting...')
+    def hit1(self):
+        if self.com.is_open():
+            print("")
+
+
+    def connectSerialPort(self):
+        #ser = self.getSerialPort()
+        global master
+        selected_port = self.serial_combobox.get()
+        print(selected_port)
+        BAUDRATE = 115200
+        read = []
+        try:
+            master = modbus_rtu.RtuMaster(
+                serial.Serial(port=selected_port,
+                            baudrate=BAUDRATE,
+                            bytesize=8,
+                            parity='N',
+                            stopbits=1,
+                            timeout=0.5))
+            master.open()
+            master.set_timeout(5.0)  # 50ms
+            master.set_verbose(True)
+            print("成功连接到从站！")
+            read = master.execute(slave=1, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                             quantity_of_x=2)
+            print("寄存器0的值为:", read)
+            print("距离:", read[0], "强度：", read[1])
+            self.displaydis_label.config(text=read[0])
+            self.displaystr_label.config(text=read[1])
+            master.close()
+        except Exception as e:
+            print("连接失败：", e)
+        #master_thread = threading.Thread(master)
+        #master_thread.start()
+        
+        #ser = serial.Serial(self.baud_combobox.get(), 9600) # 串口连接配置
+        self.serial_btn.config(activebackground="yellow")
+        # 连接成功后的操作
+        print("Serial port connected successfully!")
+    
+    def disconnect(self):
+        global ser
+        ser.close()  # 断开串口连接
+        self.serial_btn.config(bg="SystemButtonFace")  # 设置按钮背景为默认颜色
 
     def find_lidar(self):
         print('Finding lidar...')
