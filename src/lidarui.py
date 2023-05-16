@@ -20,7 +20,6 @@ class lidar_serial:
     def __init__(self):
         self.window = Tk()  # 实例化出一个父窗口
         self.com = serial.Serial()
-        self.master = serial.Serial()
 
     def lidarui(self):
         # 窗口配置
@@ -32,23 +31,40 @@ class lidar_serial:
         self.window.geometry('{}x{}+{}+{}'.format(400, 600, width // 3, height // 7))
         self.window.resizable(False, False) # 不允许调整窗口大小
         
-        # 串口设置serial_set
-        group_serial_set = LabelFrame(self.window, text="串口选择", relief='flat')
-        group_serial_set.grid(row=0, padx=10, pady=10)
+        ########################################################################
+        ################## 设备测距group_device_distance #######################
+        ########################################################################
+        # 串口设置serial_label
+        group_device_distance = LabelFrame(self.window, text="设备测距", relief='flat')
+        group_device_distance.grid(row=0, padx=10, pady=10, sticky=W)
 
-        serial_label = Label(group_serial_set, text="端口")
+        serial_label = Label(group_device_distance, text="选择串口", justify='left', relief='flat')
         serial_label.grid(row=0, column=0, padx=10, pady=10, sticky=W)
-        self.serial_combobox = ttk.Combobox(group_serial_set, width=30)
+        self.serial_combobox = ttk.Combobox(group_device_distance, width=20)
         self.serial_combobox['value'] = lidar_serial.getSerialPort()
         self.serial_combobox.grid(row=0, column=1, padx=0, pady=0)
+        # 波特率selectbaud_label
+        selectbaud_label = Label(group_device_distance, text="选择波特率", justify='left', relief='flat')
+        selectbaud_label.grid(row=1, column=0, padx=10, pady=10, sticky=W)
+        self.selectbaud_combobox = ttk.Combobox(group_device_distance, width=20, justify='left')
+        self.selectbaud_combobox['value'] = ("9600", "19200", "38400", "57600", "115200")
+        self.selectbaud_combobox.grid(row=1, column=1, padx=0, pady=0, sticky=W)
+        # id
+        selectid_label = Label(group_device_distance, text="选择id(1-255)")
+        selectid_label.grid(row=2, column=0, padx=10, pady=10, sticky=W)
+        selectid_input = Entry(group_device_distance, width=23, justify='left')
+        selectid_input.grid(row=2, column=1, padx=0, pady=10, sticky=W)
 
-        self.serial_btn = Button(group_serial_set, text="连接", width=8, command=self.connectSerialPort)
-        self.serial_btn.grid(row=0, column=2, padx=10, pady=0, sticky=E)
+        self.serial_btn = Button(group_device_distance, text="连接", width=8, command=self.connectSerialPort)
+        self.serial_btn.grid(row=3, column=2, padx=10, pady=0, sticky=E)
         
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
         separator.grid(row=1, column=0, sticky="ew", padx=10, pady=0)
 
+        ########################################################################
+        ##################### 测距显示distance_display #########################
+        ########################################################################
         # 测距显示distance_display
         group_distance_display = Frame(self.window, relief='groove')
         group_distance_display.grid(row=2, padx=10, pady=5)
@@ -69,24 +85,44 @@ class lidar_serial:
         separator = ttk.Separator(self.window, orient="horizontal")
         separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
 
+        ########################################################################
+        ############################# 设备查找 #################################
+        ########################################################################
         # 菜单menu
         group_menu = LabelFrame(self.window, text="菜单", relief='flat')
         group_menu.grid(row=4, padx=10, pady=10, sticky=W)
         
-        var = IntVar()
-        rd1 = Radiobutton(group_menu,text="设备查找",variable=var,value=0,command=self.find_lidar)
+        rd1 = Button(group_menu,text="设备查找", command=self.find_lidar)
         rd1.grid(row=0, column=0, padx=10, pady=5, sticky=W)
-        
-        rd2 = Radiobutton(group_menu,text="设备测距",variable=var,value=1,command=self.distance_lidar)
-        rd2.grid(row=1, column=0, padx=10, pady=5, sticky=W)
 
-        menu_btn = Button(group_menu, text="确定", width=8, justify='right')
-        menu_btn.grid(row=2, column=1, padx=10, pady=0)
+        distance_label = Label(group_distance_display, text="距离(cm):")
+        distance_label.grid(row=0, column=0, padx=0, pady=0, sticky=W)
+
+        self.rd1_label = Label(group_menu) # 设备查找显示
+        self.rd1_label.grid(row=1, column=0)
+        self.rd2_label = Label(group_menu)
+        self.rd2_label.grid(row=1, column=1)
+        self.rd3_label = Label(group_menu)
+        self.rd3_label.grid(row=1, column=2)
+        self.rd4_label = Label(group_menu)
+        self.rd4_label.grid(row=1, column=3)
+         
+        #rd2 = Button(group_menu,text="设备测距", command=self.distance_lidar)
+        #rd2.grid(row=2, column=0, padx=10, pady=5, sticky=W)
+
+        #self.rd5_label = Label(group_menu)  # 设备测距显示
+        #self.rd5_label.grid(row=3, column=0)
+
+        #menu_btn = Button(group_menu, text="确定", width=8, justify='right')
+        #menu_btn.grid(row=4, column=1, padx=10, pady=0)
 
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
         separator.grid(row=5, column=0, sticky="ew", padx=10, pady=0)
         
+        ########################################################################
+        ###################### 雷达配置lidar_configure ##########################
+        ########################################################################
         # 雷达配置lidar_configure
         group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
         group_lidar_configure.grid(row=6, padx=10, pady=10, sticky=W)
@@ -117,25 +153,6 @@ class lidar_serial:
 
         restore_btn = Button(group_lidar_configure, text="设置", width=8, command=self.restore_factory, justify='left')
         restore_btn.grid(row=2, column=2, padx=20, pady=0)
-        '''
-        var = IntVar()
-        rd1 = Radiobutton(group_lidar_configure,text="修改波特率",variable=var,value=0,command=self.modify_baud)
-        rd1.grid(row=0, column=0, padx=10, pady=5, sticky=W)
-        
-        self.baud_combobox = ttk.Combobox(group_lidar_configure, width=30)
-        self.baud_combobox['value'] = ("9600", "19200", "38400", "57600", "115200")
-        self.baud_combobox.grid(row=0, column=1, padx=0, pady=0)
-
-        rd2 = Radiobutton(group_lidar_configure,text="修改id",variable=var,value=1,command=self.modify_id)
-        rd2.grid(row=1, column=0, padx=10, pady=5, sticky=W)
-
-        id_input = Entry(group_lidar_configure, width=33)
-        id_input.grid(row=1, column=1, padx=10, pady=10, sticky=W)
-
-        rd3 = Radiobutton(group_lidar_configure,text="恢复出厂",variable=var,value=2,command=self.restore_factory)
-        rd3.grid(row=2, column=0, padx=10, pady=5, sticky=W)
-
-        '''
 
         #configure_btn = Button(group_lidar_configure, text="完成", width=8, command=self.save_reset_cmd)
         #configure_btn.grid(row=3, column=2, padx=10, pady=0, sticky=E)
@@ -172,7 +189,8 @@ class lidar_serial:
         global master
         selected_port = self.serial_combobox.get()
         print(selected_port)
-        BAUDRATE = 115200
+        BAUDRATE = self.selectbaud_combobox.get()
+        print(BAUDRATE)
         read = []
         try:
             master = modbus_rtu.RtuMaster(
@@ -183,7 +201,7 @@ class lidar_serial:
                             stopbits=1,
                             timeout=0.5))
             master.open()
-            master.set_timeout(5.0)  # 50ms
+            master.set_timeout(0.05)  # 50ms
             master.set_verbose(True)
             print("成功连接到从站！")
             read = master.execute(slave=1, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
@@ -198,18 +216,93 @@ class lidar_serial:
         #master_thread = threading.Thread(master)
         #master_thread.start()
         
-        #ser = serial.Serial(self.baud_combobox.get(), 9600) # 串口连接配置
         self.serial_btn.config(activebackground="yellow")
-        # 连接成功后的操作
-        print("Serial port connected successfully!")
     
+    def find_lidar(self):
+        print("开始扫描当前雷达站号和波特率,全部扫描结束时间为90S左右")
+        print("雷达站号范围:1-255,波特率:9600、19200、38400、57600、115200")
+        print("----------------------------------------------------------")
+        baudrate = 0
+        id = 0
+        #begin_time = time()
+        flag = False
+        for x in range(5):
+            for y in range(1, 5):
+                z = self.mod_lidar(Baudrate[x], y)
+                baudrate = Baudrate[x]
+                id = y
+                # print("1", baudrate, id)
+                # print(z)
+                if z == '正常':
+                    print("测距成功")
+                    print("当前波特率：", Baudrate[x], "当前站号：", y)
+                    baudrate = Baudrate[x]
+                    id = y
+                    self.rd1_label.config(text="当前波特率为:")
+                    self.rd2_label.config(text=baudrate)
+                    self.rd3_label.config(text="当前id为(DEC):")
+                    self.rd4_label.config(text=id)
+                    # print("2", baudrate, id)
+                    flag = True
+                    break
+
+            if flag:
+                break
+
+        #end_time = time()
+        #run_time = end_time - begin_time
+        #print("查询运行时间：", run_time, "\n")
+
+        return baudrate, id
+
+    def mod_lidar(self, BAUDRATE, SlaveID):
+        red = []
+        alarm = ""
+        selected_port = self.serial_combobox.get()
+        master = self.establish_serial(selected_port, BAUDRATE)
+        master.open()
+        master.set_timeout(0.05)
+        master.set_verbose(True)
+        # print("modlidar1", SlaveID)
+        try:
+            # 读保持寄存器
+            # print("modlidar2", SlaveID)
+            red = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                                quantity_of_x=2)  # 这里可以修改需要读取的功能码
+            master.set_timeout(0.05)
+            print(red)
+            # print("modlidar3", SlaveID)
+            alarm = "正常"
+
+            return alarm
+
+        except Exception as exc:
+            alarm = (str(exc))
+        master.close()
+
+        return red, alarm  
+
+    def establish_serial(master, selected_port, BAUDRATE):
+        master = modbus_rtu.RtuMaster(
+            serial.Serial(port=selected_port,
+                        baudrate=BAUDRATE,
+                        bytesize=8,
+                        parity='N',
+                        stopbits=1,
+                        timeout=0.05))
+        master.set_timeout(0.05)  # 50ms
+        master.set_verbose(True)
+
+        # print("eastablish", BAUDRATE)
+        # print(master)
+
+        return master
+
     def disconnect(self):
         global ser
         ser.close()  # 断开串口连接
         self.serial_btn.config(bg="SystemButtonFace")  # 设置按钮背景为默认颜色
 
-    def find_lidar(self):
-        print('Finding lidar...')
 
     def distance_lidar(self):
         print('Distance')
