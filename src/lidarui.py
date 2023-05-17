@@ -102,37 +102,48 @@ class lidar_serial:
         separator.grid(row=5, column=0, sticky="ew", padx=10, pady=0)
 
         ########################################################################
-        ################### 雷达配置group_lidar_configure ######################
+        ################### 雷达配置self.group_lidar_configure ######################
         ########################################################################
-        # 雷达配置group_lidar_configure
-        group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
-        group_lidar_configure.grid(row=6, padx=10, pady=10, sticky=W)
+        # 雷达配置self.group_lidar_configure
+        self.group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
+        self.group_lidar_configure.grid(row=6, padx=10, pady=10, sticky=W)
         # 修改波特率标签modifybaud_label
-        modifybaud_label = Label(group_lidar_configure, text="修改波特率", justify='left', relief='flat')
+        modifybaud_label = Label(self.group_lidar_configure, text="修改波特率", justify='left', relief='flat')
         modifybaud_label.grid(row=0, column=0, padx=10, pady=10, sticky=W)
-        self.modifybaud_combobox = ttk.Combobox(group_lidar_configure, width=20, justify='left')
+        self.modifybaud_combobox = ttk.Combobox(self.group_lidar_configure, width=20, justify='left')
         self.modifybaud_combobox['value'] = ("9600", "19200", "38400", "57600", "115200")
         self.modifybaud_combobox.grid(row=0, column=1, padx=0, pady=0, sticky=W)
         # 修改波特率设置按钮modifybaud_btn
-        modifybaud_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_baud, justify='left')
+        modifybaud_btn = Button(self.group_lidar_configure, text="设置", width=8, command=self.modify_baud, justify='left')
         modifybaud_btn.grid(row=0, column=2, padx=35, pady=0)
+        
+        # 修改波特率成功标签success_modbaud_label
+        #success_modbaud_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
+        #success_modbaud_label.grid(row=0, column=3)
+        # 修改id成功标签success_modid_label
+        #success_modid_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
+        #success_modid_label.grid(row=1, column=3)
+        # 恢复出厂成功标签success_restore_label
+        #success_restore_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
+        #success_restore_label.grid(row=2, column=3)
+
         # 修改id标签modifyid_label
-        modifyid_label = Label(group_lidar_configure, text="修改id(1-255)")
+        modifyid_label = Label(self.group_lidar_configure, text="修改id(1-255)")
         modifyid_label.grid(row=1, column=0, padx=10, pady=10, sticky=W)
         self.modifyid_var = tk.IntVar()
-        modifyid_input = Entry(group_lidar_configure, width=23, textvariable=self.modifyid_var, justify='left')
+        modifyid_input = Entry(self.group_lidar_configure, width=23, textvariable=self.modifyid_var, justify='left')
         modifyid_input.delete(0)
         modifyid_input.grid(row=1, column=1, padx=0, pady=10, sticky=W)
         # 修改id设置按钮modifyid_btn
-        modifyid_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_id, justify='left')
+        modifyid_btn = Button(self.group_lidar_configure, text="设置", width=8, command=self.modify_id, justify='left')
         modifyid_btn.grid(row=1, column=2, padx=35, pady=0)
         # 恢复出厂标签restore_label
-        restore_label = Label(group_lidar_configure, text="恢复出厂")
+        restore_label = Label(self.group_lidar_configure, text="恢复出厂")
         restore_label.grid(row=2, column=0, padx=10, pady=10, sticky=W)
-        empty_label = Label(group_lidar_configure, text="---", justify='center')
+        empty_label = Label(self.group_lidar_configure, text="---", justify='center')
         empty_label.grid(row=2, column=1, padx=10, pady=10)
         # 恢复出厂设置按钮restore_btn
-        restore_btn = Button(group_lidar_configure, text="设置", width=8, command=self.restore_factory, justify='left')
+        restore_btn = Button(self.group_lidar_configure, text="设置", width=8, command=self.restore_factory, justify='left')
         restore_btn.grid(row=2, column=2, padx=35, pady=0)
 
         # 添加一条分割线
@@ -340,6 +351,13 @@ class lidar_serial:
 
             alarm = "正常"
 
+            if read is not None:
+                messagebox.showinfo("提示", "修改波特率成功")
+
+            #if read is not None:
+                # 修改波特率成功标签success_modbaud_label
+                #success_modbaud_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
+                #success_modbaud_label.grid(row=0, column=3)
             return alarm
 
         except Exception as exc:
@@ -381,6 +399,9 @@ class lidar_serial:
 
             alarm = "正常"
 
+            if read is not None:
+                messagebox.showinfo("提示", "修改id成功")
+
             return alarm
 
         except Exception as exc:
@@ -410,8 +431,18 @@ class lidar_serial:
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
                              output_value=1)  # 重启设备指令
             master.set_timeout(0.5)
-
+            # 读保持寄存器
+            read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                                  quantity_of_x=2)
+            print("成功连接到从站！")
+            print("寄存器0的值为:", read)
+            print("距离:", read[0], "强度：", read[1])
+            self.displaydis_label.config(text=read[0])
+            self.displaystr_label.config(text=read[1])
             alarm = "正常"
+
+            if read is not None:
+                messagebox.showinfo("提示", "恢复出厂成功")
 
             return alarm
 
