@@ -63,7 +63,9 @@ class lidar_serial:
         # id标签selectid_label
         selectid_label = Label(group_device_distance, text="选择id(1-255)")
         selectid_label.grid(row=2, column=0, padx=10, pady=10, sticky=W)
-        selectid_input = Entry(group_device_distance, width=23, justify='left')
+        self.SlaveID_var = tk.IntVar()
+        selectid_input = Entry(group_device_distance, width=23, textvariable=self.SlaveID_var, justify='left')
+        selectid_input.delete(0)
         selectid_input.grid(row=2, column=1, padx=0, pady=10, sticky=W)
         # 连接按钮self.serial_btn
         self.serial_btn = Button(group_device_distance, text="连接", width=8, command=self.connectSerialPort)
@@ -100,11 +102,49 @@ class lidar_serial:
         separator.grid(row=5, column=0, sticky="ew", padx=10, pady=0)
 
         ########################################################################
+        ################### 雷达配置group_lidar_configure ######################
+        ########################################################################
+        # 雷达配置group_lidar_configure
+        group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
+        group_lidar_configure.grid(row=6, padx=10, pady=10, sticky=W)
+        # 修改波特率标签modifybaud_label
+        modifybaud_label = Label(group_lidar_configure, text="修改波特率", justify='left', relief='flat')
+        modifybaud_label.grid(row=0, column=0, padx=10, pady=10, sticky=W)
+        self.modifybaud_combobox = ttk.Combobox(group_lidar_configure, width=20, justify='left')
+        self.modifybaud_combobox['value'] = ("9600", "19200", "38400", "57600", "115200")
+        self.modifybaud_combobox.grid(row=0, column=1, padx=0, pady=0, sticky=W)
+        # 修改波特率设置按钮modifybaud_btn
+        modifybaud_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_baud, justify='left')
+        modifybaud_btn.grid(row=0, column=2, padx=35, pady=0)
+        # 修改id标签modifyid_label
+        modifyid_label = Label(group_lidar_configure, text="修改id(1-255)")
+        modifyid_label.grid(row=1, column=0, padx=10, pady=10, sticky=W)
+        self.modifyid_var = tk.IntVar()
+        modifyid_input = Entry(group_lidar_configure, width=23, textvariable=self.modifyid_var, justify='left')
+        modifyid_input.delete(0)
+        modifyid_input.grid(row=1, column=1, padx=0, pady=10, sticky=W)
+        # 修改id设置按钮modifyid_btn
+        modifyid_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_id, justify='left')
+        modifyid_btn.grid(row=1, column=2, padx=35, pady=0)
+        # 恢复出厂标签restore_label
+        restore_label = Label(group_lidar_configure, text="恢复出厂")
+        restore_label.grid(row=2, column=0, padx=10, pady=10, sticky=W)
+        empty_label = Label(group_lidar_configure, text="---", justify='center')
+        empty_label.grid(row=2, column=1, padx=10, pady=10)
+        # 恢复出厂设置按钮restore_btn
+        restore_btn = Button(group_lidar_configure, text="设置", width=8, command=self.restore_factory, justify='left')
+        restore_btn.grid(row=2, column=2, padx=35, pady=0)
+
+        # 添加一条分割线
+        separator = ttk.Separator(self.window, orient="horizontal")
+        separator.grid(row=7, column=0, sticky="ew", padx=10, pady=0)
+
+        ########################################################################
         ##################### 设备查找group_device_find #########################
         ########################################################################
         # 设备查找group_device_find
         group_device_find = LabelFrame(self.window, text="设备查找", relief='flat')
-        group_device_find.grid(row=6, padx=10, pady=10, sticky=W)
+        group_device_find.grid(row=8, padx=10, pady=10, sticky=W)
         # 波特率标签findbaud_label
         findbaud_label = Label(group_device_find, text="当前波特率为:")
         findbaud_label.grid(row=0, column=0, padx=15, pady=0, sticky=W)
@@ -120,42 +160,6 @@ class lidar_serial:
         # 开始查找按钮self.findstart_btn
         self.findstart_btn = Button(group_device_find,text="开始", width=8, command=self.find_lidar)
         self.findstart_btn.grid(row=2, column=1, padx=40, pady=10, sticky=E)
-
-        # 添加一条分割线
-        separator = ttk.Separator(self.window, orient="horizontal")
-        separator.grid(row=7, column=0, sticky="ew", padx=10, pady=0)
-        
-        ########################################################################
-        ################### 雷达配置group_lidar_configure ######################
-        ########################################################################
-        # 雷达配置group_lidar_configure
-        group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
-        group_lidar_configure.grid(row=8, padx=10, pady=10, sticky=W)
-        # 修改波特率标签modifybaud_label
-        modifybaud_label = Label(group_lidar_configure, text="修改波特率", justify='left', relief='flat')
-        modifybaud_label.grid(row=0, column=0, padx=10, pady=10, sticky=W)
-        self.modifybaud_combobox = ttk.Combobox(group_lidar_configure, width=20, justify='left')
-        self.modifybaud_combobox['value'] = ("9600", "19200", "38400", "57600", "115200")
-        self.modifybaud_combobox.grid(row=0, column=1, padx=0, pady=0, sticky=W)
-        # 修改波特率设置按钮modifybaud_btn
-        modifybaud_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_baud, justify='left')
-        modifybaud_btn.grid(row=0, column=2, padx=35, pady=0)
-        # 修改id标签modifyid_label
-        modifyid_label = Label(group_lidar_configure, text="修改id(1-255)")
-        modifyid_label.grid(row=1, column=0, padx=10, pady=10, sticky=W)
-        modifyid_input = Entry(group_lidar_configure, width=23, justify='left')
-        modifyid_input.grid(row=1, column=1, padx=0, pady=10, sticky=W)
-        # 修改id设置按钮modifyid_btn
-        modifyid_btn = Button(group_lidar_configure, text="设置", width=8, command=self.modify_id, justify='left')
-        modifyid_btn.grid(row=1, column=2, padx=35, pady=0)
-        # 恢复出厂标签restore_label
-        restore_label = Label(group_lidar_configure, text="恢复出厂")
-        restore_label.grid(row=2, column=0, padx=10, pady=10, sticky=W)
-        empty_label = Label(group_lidar_configure, text="---", justify='center')
-        empty_label.grid(row=2, column=1, padx=10, pady=10)
-        # 恢复出厂设置按钮restore_btn
-        restore_btn = Button(group_lidar_configure, text="设置", width=8, command=self.restore_factory, justify='left')
-        restore_btn.grid(row=2, column=2, padx=35, pady=0)
 
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
@@ -182,9 +186,8 @@ class lidar_serial:
     def connectSerialPort(self):
         # global master
         selected_port = self.serial_combobox.get()
-        print(selected_port)
         BAUDRATE = self.selectbaud_combobox.get()
-        print(BAUDRATE)
+        SlaveID = self.SlaveID_var.get()
         read = []
         try:
             master = modbus_rtu.RtuMaster(
@@ -197,9 +200,10 @@ class lidar_serial:
             master.open()
             master.set_timeout(0.05)  # 50ms
             master.set_verbose(True)
-            print("成功连接到从站！")
-            read = master.execute(slave=1, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+            
+            read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
                                   quantity_of_x=2)
+            print("成功连接到从站！")
             print("寄存器0的值为:", read)
             print("距离:", read[0], "强度：", read[1])
             self.displaydis_label.config(text=read[0])
@@ -225,19 +229,18 @@ class lidar_serial:
         new_window_label2 = Label(new_window, text="请等待......")
         new_window_label2.grid(row=1, column=0, padx=90, pady=0)
         new_window.resizable(False, False) # 不允许调整窗口大小
-
+        # 设备轮询并记录波特率和id值
         baudrate = 0
         id = 0
         begin_time = time.time()
         flag = False
         for x in range(5):
-            for y in range(1, 10):
+            for y in range(1, 5):
                 z = self.mod_lidar(Baudrate[x], y)
                 baudrate = Baudrate[x]
                 id = y
                 new_window.update()
-                # print("1", baudrate, id)
-                # print(z)
+
                 if z == '正常':
                     print("测距成功")
                     print("当前波特率：", Baudrate[x], "当前站号：", y)
@@ -245,7 +248,6 @@ class lidar_serial:
                     id = y
                     self.displaybaud_label.config(text=baudrate)
                     self.displayid_label.config(text=id)
-                    # print("2", baudrate, id)
                     flag = True
                     break
             if flag:
@@ -266,15 +268,12 @@ class lidar_serial:
         master.open()
         master.set_timeout(0.05)
         master.set_verbose(True)
-        # print("modlidar1", SlaveID)
         try:
             # 读保持寄存器
-            # print("modlidar2", SlaveID)
             red = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
                                 quantity_of_x=2)  # 这里可以修改需要读取的功能码
             master.set_timeout(0.05)
             print(red)
-            # print("modlidar3", SlaveID)
             alarm = "正常"
 
             return alarm
@@ -283,7 +282,7 @@ class lidar_serial:
             alarm = (str(exc))
         master.close()
 
-        return red, alarm  
+        return red, alarm
 
     def establish_serial(master, selected_port, BAUDRATE):
         master = modbus_rtu.RtuMaster(
@@ -296,28 +295,132 @@ class lidar_serial:
         master.set_timeout(0.05)  # 50ms
         master.set_verbose(True)
 
-        # print("eastablish", BAUDRATE)
-        # print(master)
-
         return master
 
-    def disconnect(self):
-        global ser
-        ser.close()  # 断开串口连接
-        self.serial_btn.config(bg="SystemButtonFace")  # 设置按钮背景为默认颜色
-
-
-    def distance_lidar(self):
-        print('Distance')
-
     def modify_baud(self):
-        print('Modifying baud...')
+        red = []
+        alarm = ""
+        selected_port = self.serial_combobox.get()
+        BAUDRATE = self.selectbaud_combobox.get()
+        New_BAUDRATE = self.modifybaud_combobox.get()
+        SlaveID = self.SlaveID_var.get()
+
+        master = self.establish_serial(selected_port, BAUDRATE)
+        master.open()
+        master.set_timeout(0.5)
+        try:
+            # 将十进制转换为十六进制，并用0填充成8位
+            New_BAUDRATE_hex = hex(int(New_BAUDRATE))[2:].zfill(8)
+            # 将十六进制字符串转换为两个字节的波特率高位和波特率低位
+            New_BAUDRATE_H = hex(int(New_BAUDRATE_hex[:4], 16))
+            NH = int(New_BAUDRATE_H, 16)
+            New_BAUDRATE_L = hex(int(New_BAUDRATE_hex[4:], 16))
+            NL = int(New_BAUDRATE_L, 16)
+            # 写保持寄存器
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x83,
+                                output_value=NH)  # 修改波特率高字节指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x84,
+                             output_value=NL)  # 修改波特率低字节指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
+                             output_value=0)  # 保存设备指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
+                             output_value=1)  # 重启设备指令
+            master.set_timeout(0.5)
+            # 读保持寄存器
+            read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                                  quantity_of_x=2)
+            print("成功连接到从站！")
+            print("寄存器0的值为:", read)
+            print("距离:", read[0], "强度：", read[1])
+            self.displaydis_label.config(text=read[0])
+            self.displaystr_label.config(text=read[1])
+
+            alarm = "正常"
+
+            return alarm
+
+        except Exception as exc:
+            alarm = (str(exc))
+        master.close()
+
+        return red, alarm        
     
     def modify_id(self):
-        print('Modifying id...')
+        red = []
+        alarm = ""
+        selected_port = self.serial_combobox.get()
+        BAUDRATE = self.selectbaud_combobox.get()
+        SlaveID = self.SlaveID_var.get()
+        New_SlaveID = self.modifyid_var.get()
+        
+        master = self.establish_serial(selected_port, BAUDRATE)
+        master.open()
+        master.set_timeout(0.5)
+        try:
+            # 写保持寄存器
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x85,
+                                output_value=New_SlaveID)  # 修改id指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
+                             output_value=0)  # 保存设备指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
+                             output_value=1)  # 重启设备指令
+            master.set_timeout(0.5)
+            # 读保持寄存器
+            read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                                  quantity_of_x=2)
+            print("成功连接到从站！")
+            print("寄存器0的值为:", read)
+            print("距离:", read[0], "强度：", read[1])
+            self.displaydis_label.config(text=read[0])
+            self.displaystr_label.config(text=read[1])
+
+            alarm = "正常"
+
+            return alarm
+
+        except Exception as exc:
+            alarm = (str(exc))
+
+        master.close()
+
+        return red, alarm
 
     def restore_factory(self):
-        print('Restoring factory...')
+        red = []
+        alarm = ""
+        selected_port = self.serial_combobox.get()
+        BAUDRATE = self.selectbaud_combobox.get()
+        SlaveID = self.SlaveID_var.get()
+        master = self.establish_serial(selected_port, BAUDRATE)
+        master.open()
+        master.set_timeout(0.5)
+        try:
+            # 写保持寄存器
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x89,
+                                output_value=0)  # 恢复出厂指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
+                             output_value=0)  # 保存设备指令
+            master.set_timeout(0.5)
+            red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
+                             output_value=1)  # 重启设备指令
+            master.set_timeout(0.5)
+
+            alarm = "正常"
+
+            return alarm
+
+        except Exception as exc:
+            alarm = (str(exc))
+
+        master.close()
+
+        return red, alarm
 
     def save_reset_cmd(self):
         print('Saving reset cmd...')
