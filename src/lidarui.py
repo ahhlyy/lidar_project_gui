@@ -19,7 +19,7 @@ class MENU:
     @staticmethod
     def callback1():
         print("--- 帮助 ---")
-        os.startfile("data\\help.html")
+        os.startfile("help.html")
 
 
 class lidar_serial:
@@ -98,10 +98,12 @@ class lidar_serial:
         strength_label = Label(group_distance_display, text="强度:")
         strength_label.grid(row=0, column=1, padx=140, pady=0, sticky=W)
         # 距离值显示标签self.displaydis_label
-        self.displaydis_label = Label(group_distance_display, text="   ", relief='flat')
+        self.displaydis_var = StringVar()
+        self.displaydis_label = Label(group_distance_display, textvariable=self.displaydis_var, relief='flat')
         self.displaydis_label.grid(row=1, column=0)
         # 强度值显示标签self.displaystr_label
-        self.displaystr_label = Label(group_distance_display, text="   ", relief='flat')
+        self.displaystr_var = StringVar()
+        self.displaystr_label = Label(group_distance_display, textvariable=self.displaystr_var, relief='flat')
         self.displaystr_label.grid(row=1, column=1)
         #绘图按钮self.paint_btn
         self.paint_btn = Button(group_distance_display, text="制图", width=8, command=self.paint)
@@ -212,19 +214,29 @@ class lidar_serial:
             master.set_timeout(0.05)  # 50ms
             master.set_verbose(True)
             
-            read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
-                                quantity_of_x=2)
-            print("成功连接到从站！")
-            print("寄存器0的值为:", read)
-            print("距离:", read[0], "强度：", read[1])
-            self.displaydis_label.config(text=read[0]) # 显示距离
-            self.displaystr_label.config(text=read[1]) # 显示强度
+            for i in range(500):
+                read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
+                                    quantity_of_x=2)
+                print("成功连接到从站！")
+                print("寄存器0的值为:", read)
+                print("距离:", read[0], "强度：", read[1])
+                self.display_upgrade(read) # 距离显示标签更新
+                i += 1
+                
             
             master.close()
         except Exception as e:
             print("连接失败：", e)
-        
+
         self.serial_btn.config(activebackground="yellow")
+
+        #return ReadFlag
+
+    # 距离显示标签更新
+    def display_upgrade(self,read):
+        self.displaydis_var.set(str(read[0])) # 距离读取
+        self.displaystr_var.set(str(read[1])) # 强度读取
+        self.window.update()
 
     #　查找雷达设备
     def find_lidar(self):

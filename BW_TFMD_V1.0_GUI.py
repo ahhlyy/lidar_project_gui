@@ -1,6 +1,6 @@
-from src.ui import lidar_serial
+from src.lidarui import lidar_serial
 
 if __name__ == "__main__":
     mySerial = lidar_serial()
-    mySerial.ui()
+    mySerial.lidarui()
 
