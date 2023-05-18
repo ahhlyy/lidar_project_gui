@@ -4,17 +4,22 @@ import tkinter as tk
 from tkinter import messagebox
 import serial
 import serial.tools.list_ports
-import threading
 import modbus_tk.defines as cst
 from modbus_tk import modbus_rtu
 import time
-import numpy as np
-import sys
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.payload import BinaryPayloadBuilder
+import os
+
 
 Baudrate = [9600, 115200, 19200, 38400, 57600]
+
+class MENU:
+    def __init__(self, init_window_name):
+        self.window_name = init_window_name
+
+    @staticmethod
+    def callback1():
+        print("--- 帮助 ---")
+        os.startfile("data\\help.html")
 
 
 class lidar_serial:
@@ -31,7 +36,12 @@ class lidar_serial:
         # {}x{} 窗口大小，+10 +10 定义窗口弹出时的默认展示位置
         self.window.geometry('{}x{}+{}+{}'.format(400, 700, width // 3, height // 15))
         self.window.resizable(False, False) # 不允许调整窗口大小
-        
+
+        # 菜单创建
+        menu = MENU(self.window)
+        menu_bar = Menu(self.window)
+        menu_bar.add_command(label="帮助", command=menu.callback1)
+        self.window.config(menu=menu_bar)
         ########################################################################
         ################### 串口选择group_serial_select ########################
         ########################################################################
@@ -52,7 +62,7 @@ class lidar_serial:
         ################## 设备测距group_device_distance #######################
         ########################################################################
         # 设备测距group_device_distance
-        group_device_distance = LabelFrame(self.window, text="设备测距", relief='flat')
+        group_device_distance = LabelFrame(self.window, text="设备连接", relief='flat')
         group_device_distance.grid(row=2, padx=10, pady=10, sticky=W)
         # 波特率标签selectbaud_label
         selectbaud_label = Label(group_device_distance, text="选择波特率", justify='left', relief='flat')
@@ -116,17 +126,6 @@ class lidar_serial:
         # 修改波特率设置按钮modifybaud_btn
         modifybaud_btn = Button(self.group_lidar_configure, text="设置", width=8, command=self.modify_baud, justify='left')
         modifybaud_btn.grid(row=0, column=2, padx=35, pady=0)
-        
-        # 修改波特率成功标签success_modbaud_label
-        #success_modbaud_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
-        #success_modbaud_label.grid(row=0, column=3)
-        # 修改id成功标签success_modid_label
-        #success_modid_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
-        #success_modid_label.grid(row=1, column=3)
-        # 恢复出厂成功标签success_restore_label
-        #success_restore_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
-        #success_restore_label.grid(row=2, column=3)
-
         # 修改id标签modifyid_label
         modifyid_label = Label(self.group_lidar_configure, text="修改id(1-255)")
         modifyid_label.grid(row=1, column=0, padx=10, pady=10, sticky=W)
@@ -178,6 +177,7 @@ class lidar_serial:
 
         self.window.mainloop()
 
+    # 获取串口列表
     def getSerialPort():
         port = []
         portList = list(serial.tools.list_ports.comports())
@@ -194,8 +194,8 @@ class lidar_serial:
                 pass
         return port
 
+    # 连接串口
     def connectSerialPort(self):
-        # global master
         selected_port = self.serial_combobox.get()
         BAUDRATE = self.selectbaud_combobox.get()
         SlaveID = self.SlaveID_var.get()
@@ -213,18 +213,20 @@ class lidar_serial:
             master.set_verbose(True)
             
             read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
-                                  quantity_of_x=2)
+                                quantity_of_x=2)
             print("成功连接到从站！")
             print("寄存器0的值为:", read)
             print("距离:", read[0], "强度：", read[1])
-            self.displaydis_label.config(text=read[0])
-            self.displaystr_label.config(text=read[1])
+            self.displaydis_label.config(text=read[0]) # 显示距离
+            self.displaystr_label.config(text=read[1]) # 显示强度
+            
             master.close()
         except Exception as e:
             print("连接失败：", e)
         
         self.serial_btn.config(activebackground="yellow")
 
+    #　查找雷达设备
     def find_lidar(self):
         print("开始扫描当前雷达站号和波特率,全部扫描结束时间为90S左右")
         print("雷达站号范围:1-255,波特率:9600、19200、38400、57600、115200")
@@ -257,8 +259,8 @@ class lidar_serial:
                     print("当前波特率：", Baudrate[x], "当前站号：", y)
                     baudrate = Baudrate[x]
                     id = y
-                    self.displaybaud_label.config(text=baudrate)
-                    self.displayid_label.config(text=id)
+                    self.displaybaud_label.config(text=baudrate) # 显示波特率
+                    self.displayid_label.config(text=id) # 显示id
                     flag = True
                     break
             if flag:
@@ -271,6 +273,7 @@ class lidar_serial:
 
         return baudrate, id
 
+    # 在modbus从站中读取测距值    
     def mod_lidar(self, BAUDRATE, SlaveID):
         red = []
         alarm = ""
@@ -285,6 +288,8 @@ class lidar_serial:
                                 quantity_of_x=2)  # 这里可以修改需要读取的功能码
             master.set_timeout(0.05)
             print(red)
+            self.displaydis_label.config(text=red[0]) # 显示距离
+            self.displaystr_label.config(text=red[1]) # 显示强度
             alarm = "正常"
 
             return alarm
@@ -295,6 +300,7 @@ class lidar_serial:
 
         return red, alarm
 
+    # 创建modbus从站
     def establish_serial(master, selected_port, BAUDRATE):
         master = modbus_rtu.RtuMaster(
             serial.Serial(port=selected_port,
@@ -308,6 +314,7 @@ class lidar_serial:
 
         return master
 
+    # 修改波特率配置
     def modify_baud(self):
         red = []
         alarm = ""
@@ -352,12 +359,9 @@ class lidar_serial:
             alarm = "正常"
 
             if read is not None:
-                messagebox.showinfo("提示", "修改波特率成功")
+                text = f"修改波特率成功 !\n当前波特率修改为 : {New_BAUDRATE}\n当前id为 : {SlaveID}"
+                messagebox.showinfo("提示", text)
 
-            #if read is not None:
-                # 修改波特率成功标签success_modbaud_label
-                #success_modbaud_label = Label(self.group_lidar_configure, text="成功", width=8, bg='yellow')
-                #success_modbaud_label.grid(row=0, column=3)
             return alarm
 
         except Exception as exc:
@@ -366,6 +370,7 @@ class lidar_serial:
 
         return red, alarm        
     
+    # 修改id配置
     def modify_id(self):
         red = []
         alarm = ""
@@ -400,7 +405,8 @@ class lidar_serial:
             alarm = "正常"
 
             if read is not None:
-                messagebox.showinfo("提示", "修改id成功")
+                text = f"修改id成功 !\n当前波特率为 : {BAUDRATE}\n当前id修改为 : {New_SlaveID}"                
+                messagebox.showinfo("提示", text)
 
             return alarm
 
@@ -411,6 +417,7 @@ class lidar_serial:
 
         return red, alarm
 
+    # 恢复出厂配置
     def restore_factory(self):
         red = []
         alarm = ""
@@ -442,7 +449,7 @@ class lidar_serial:
             alarm = "正常"
 
             if read is not None:
-                messagebox.showinfo("提示", "恢复出厂成功")
+                messagebox.showinfo("提示", "恢复出厂成功 !\n当前波特率为 : 115200\n当前id为 : 1")
 
             return alarm
 
