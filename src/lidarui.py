@@ -78,7 +78,9 @@ class lidar_serial:
         selectid_input.delete(0)
         selectid_input.grid(row=2, column=1, padx=0, pady=10, sticky=W)
         # 连接按钮self.serial_btn
-        self.serial_btn = Button(group_device_distance, text="连接", width=8, command=self.connectSerialPort)
+        self.serial_btn_state = StringVar()
+        self.serial_btn_state.set('连接')
+        self.serial_btn = Button(group_device_distance, textvariable=self.serial_btn_state, width=8, command=self.connectSerialPort, state='normal')#state='disabled'relief='raised'
         self.serial_btn.grid(row=3, column=2, padx=35, pady=0, sticky=E)
 
         # 添加一条分割线
@@ -213,27 +215,33 @@ class lidar_serial:
             master.open()
             master.set_timeout(0.05)  # 50ms
             master.set_verbose(True)
+            print(master.open())   
             
-            for i in range(500):
+            while True:
+                self.serial_btn.config(state='active')
+                self.serial_btn_state.set('连接中')
+                self.serial_btn.config(relief='sunken')
+                # 读寄存器
                 read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
-                                    quantity_of_x=2)
+                                      quantity_of_x=2)
                 print("成功连接到从站！")
                 print("寄存器0的值为:", read)
                 print("距离:", read[0], "强度：", read[1])
-                self.display_upgrade(read) # 距离显示标签更新
-                i += 1
-                
+                self.display_upgrade(read)  # 距离显示标签更新        
+                    
+                if self.serial_btn['state'] == 'normal':
+                    self.serial_btn.config(relief='raised')
+                    self.serial_btn_state.set('连接')
+                    break
             
             master.close()
         except Exception as e:
             print("连接失败：", e)
-
-        self.serial_btn.config(activebackground="yellow")
-
-        #return ReadFlag
+            self.serial_btn.config(relief='raised')
+            self.serial_btn_state.set('连接')
 
     # 距离显示标签更新
-    def display_upgrade(self,read):
+    def display_upgrade(self, read):
         self.displaydis_var.set(str(read[0])) # 距离读取
         self.displaystr_var.set(str(read[1])) # 强度读取
         self.window.update()
@@ -472,11 +480,9 @@ class lidar_serial:
 
         return red, alarm
 
-    def save_reset_cmd(self):
-        print('Saving reset cmd...')
-
     def paint(self):
         print('Paint...')
+        messagebox.showinfo("提示", "暂无此功能")
 
 if __name__ == "__main__":
     mySerial = lidar_serial()
