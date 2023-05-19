@@ -269,7 +269,7 @@ class lidar_serial:
         begin_time = time.time()
         flag = False
         for x in range(5):
-            for y in range(1, 5):
+            for y in range(1, 256):
                 z = self.mod_lidar(Baudrate[x], y)
                 baudrate = Baudrate[x]
                 id = y
