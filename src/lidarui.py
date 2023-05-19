@@ -12,6 +12,7 @@ import os
 
 Baudrate = [9600, 115200, 19200, 38400, 57600]
 
+
 class MENU:
     def __init__(self, init_window_name):
         self.window_name = init_window_name
@@ -35,7 +36,7 @@ class lidar_serial:
         print(width, height)
         # {}x{} 窗口大小，+10 +10 定义窗口弹出时的默认展示位置
         self.window.geometry('{}x{}+{}+{}'.format(400, 700, width // 3, height // 15))
-        self.window.resizable(False, False) # 不允许调整窗口大小
+        self.window.resizable(False, False)  # 不允许调整窗口大小
 
         # 菜单创建
         menu = MENU(self.window)
@@ -116,7 +117,7 @@ class lidar_serial:
         separator.grid(row=5, column=0, sticky="ew", padx=10, pady=0)
 
         ########################################################################
-        ################### 雷达配置self.group_lidar_configure ######################
+        ################### 雷达配置self.group_lidar_configure ##################
         ########################################################################
         # 雷达配置self.group_lidar_configure
         self.group_lidar_configure = LabelFrame(self.window, text="雷达配置", relief='flat')
@@ -216,7 +217,7 @@ class lidar_serial:
             master.set_timeout(0.05)  # 50ms
             master.set_verbose(True)
             print(master.open())   
-            
+
             while True:
                 self.serial_btn.config(state='active')
                 self.serial_btn_state.set('连接中')
@@ -227,13 +228,13 @@ class lidar_serial:
                 print("成功连接到从站！")
                 print("寄存器0的值为:", read)
                 print("距离:", read[0], "强度：", read[1])
-                self.display_upgrade(read)  # 距离显示标签更新        
-                    
+                self.display_upgrade(read)  # 距离显示标签更新
+
                 if self.serial_btn['state'] == 'normal':
                     self.serial_btn.config(relief='raised')
                     self.serial_btn_state.set('连接')
                     break
-            
+
             master.close()
         except Exception as e:
             print("连接失败：", e)
@@ -242,11 +243,11 @@ class lidar_serial:
 
     # 距离显示标签更新
     def display_upgrade(self, read):
-        self.displaydis_var.set(str(read[0])) # 距离读取
-        self.displaystr_var.set(str(read[1])) # 强度读取
+        self.displaydis_var.set(str(read[0]))  # 距离读取
+        self.displaystr_var.set(str(read[1]))  # 强度读取
         self.window.update()
 
-    #　查找雷达设备
+    # 查找雷达设备
     def find_lidar(self):
         print("开始扫描当前雷达站号和波特率,全部扫描结束时间为90S左右")
         print("雷达站号范围:1-255,波特率:9600、19200、38400、57600、115200")
@@ -261,7 +262,7 @@ class lidar_serial:
         new_window_label1.grid(row=0, column=0, padx=90, pady=15)
         new_window_label2 = Label(new_window, text="请等待......")
         new_window_label2.grid(row=1, column=0, padx=90, pady=0)
-        new_window.resizable(False, False) # 不允许调整窗口大小
+        new_window.resizable(False, False)  # 不允许调整窗口大小
         # 设备轮询并记录波特率和id值
         baudrate = 0
         id = 0
@@ -293,7 +294,7 @@ class lidar_serial:
 
         return baudrate, id
 
-    # 在modbus从站中读取测距值    
+    # 在modbus从站中读取测距值
     def mod_lidar(self, BAUDRATE, SlaveID):
         red = []
         alarm = ""
@@ -305,11 +306,11 @@ class lidar_serial:
         try:
             # 读保持寄存器
             red = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
-                                quantity_of_x=2)  # 这里可以修改需要读取的功能码
+                                 quantity_of_x=2)  # 这里可以修改需要读取的功能码
             master.set_timeout(0.05)
             print(red)
-            self.displaydis_label.config(text=red[0]) # 显示距离
-            self.displaystr_label.config(text=red[1]) # 显示强度
+            self.displaydis_label.config(text=red[0])  # 显示距离
+            self.displaystr_label.config(text=red[1])  # 显示强度
             alarm = "正常"
 
             return alarm
@@ -324,11 +325,11 @@ class lidar_serial:
     def establish_serial(master, selected_port, BAUDRATE):
         master = modbus_rtu.RtuMaster(
             serial.Serial(port=selected_port,
-                        baudrate=BAUDRATE,
-                        bytesize=8,
-                        parity='N',
-                        stopbits=1,
-                        timeout=0.05))
+                          baudrate=BAUDRATE,
+                          bytesize=8,
+                          parity='N',
+                          stopbits=1,
+                          timeout=0.05))
         master.set_timeout(0.05)  # 50ms
         master.set_verbose(True)
 
@@ -356,16 +357,16 @@ class lidar_serial:
             NL = int(New_BAUDRATE_L, 16)
             # 写保持寄存器
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x83,
-                                output_value=NH)  # 修改波特率高字节指令
+                                 output_value=NH)  # 修改波特率高字节指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x84,
-                             output_value=NL)  # 修改波特率低字节指令
+                                 output_value=NL)  # 修改波特率低字节指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
-                             output_value=0)  # 保存设备指令
+                                 output_value=0)  # 保存设备指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
-                             output_value=1)  # 重启设备指令
+                                 output_value=1)  # 重启设备指令
             master.set_timeout(0.5)
             # 读保持寄存器
             read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
@@ -388,8 +389,8 @@ class lidar_serial:
             alarm = (str(exc))
         master.close()
 
-        return red, alarm        
-    
+        return red, alarm
+
     # 修改id配置
     def modify_id(self):
         red = []
@@ -398,20 +399,20 @@ class lidar_serial:
         BAUDRATE = self.selectbaud_combobox.get()
         SlaveID = self.SlaveID_var.get()
         New_SlaveID = self.modifyid_var.get()
-        
+
         master = self.establish_serial(selected_port, BAUDRATE)
         master.open()
         master.set_timeout(0.5)
         try:
             # 写保持寄存器
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x85,
-                                output_value=New_SlaveID)  # 修改id指令
+                                 output_value=New_SlaveID)  # 修改id指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
-                             output_value=0)  # 保存设备指令
+                                 output_value=0)  # 保存设备指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
-                             output_value=1)  # 重启设备指令
+                                 output_value=1)  # 重启设备指令
             master.set_timeout(0.5)
             # 读保持寄存器
             read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
@@ -425,7 +426,7 @@ class lidar_serial:
             alarm = "正常"
 
             if read is not None:
-                text = f"修改id成功 !\n当前波特率为 : {BAUDRATE}\n当前id修改为 : {New_SlaveID}"                
+                text = f"修改id成功 !\n当前波特率为 : {BAUDRATE}\n当前id修改为 : {New_SlaveID}"
                 messagebox.showinfo("提示", text)
 
             return alarm
@@ -450,13 +451,13 @@ class lidar_serial:
         try:
             # 写保持寄存器
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x89,
-                                output_value=0)  # 恢复出厂指令
+                                 output_value=0)  # 恢复出厂指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x80,
-                             output_value=0)  # 保存设备指令
+                                 output_value=0)  # 保存设备指令
             master.set_timeout(0.5)
             red = master.execute(slave=SlaveID, function_code=cst.WRITE_SINGLE_REGISTER, starting_address=0x81,
-                             output_value=1)  # 重启设备指令
+                                 output_value=1)  # 重启设备指令
             master.set_timeout(0.5)
             # 读保持寄存器
             read = master.execute(slave=SlaveID, function_code=cst.READ_HOLDING_REGISTERS, starting_address=0,
