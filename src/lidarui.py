@@ -31,10 +31,11 @@ class lidar_serial:
     def lidarui(self):
         # 窗口配置
         self.window.title("北醒雷达串口调试助手")
+        # self.window.iconbitmap(default='logo.ico')
         width = self.window.winfo_screenwidth()
         height = self.window.winfo_screenheight()
         print(width, height)
-        # {}x{} 窗口大小，+10 +10 定义窗口弹出时的默认展示位置
+        # {}x{} 窗口大小，+10 +S10 定义窗口弹出时的默认展示位置
         self.window.geometry('{}x{}+{}+{}'.format(400, 700, width // 3, height // 15))
         self.window.resizable(False, False)  # 不允许调整窗口大小
 
@@ -58,7 +59,7 @@ class lidar_serial:
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
         separator.grid(row=1, column=0, sticky="ew", padx=10, pady=0)
-
+        separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
         ########################################################################
         ################## 设备测距group_device_distance #######################
         ########################################################################
@@ -85,8 +86,8 @@ class lidar_serial:
         self.serial_btn.grid(row=3, column=2, padx=35, pady=0, sticky=E)
 
         # 添加一条分割线
-        separator = ttk.Separator(self.window, orient="horizontal")
-        separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
+        #separator = ttk.Separator(self.window, orient="horizontal")
+        #separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
 
         ########################################################################
         ################### 测距显示group_distance_display ######################
