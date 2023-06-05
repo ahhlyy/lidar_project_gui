@@ -59,7 +59,7 @@ class lidar_serial:
         # 添加一条分割线
         separator = ttk.Separator(self.window, orient="horizontal")
         separator.grid(row=1, column=0, sticky="ew", padx=10, pady=0)
-        separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
+        # separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
         ########################################################################
         ################## 设备测距group_device_distance #######################
         ########################################################################
@@ -86,8 +86,8 @@ class lidar_serial:
         self.serial_btn.grid(row=3, column=2, padx=35, pady=0, sticky=E)
 
         # 添加一条分割线
-        #separator = ttk.Separator(self.window, orient="horizontal")
-        #separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
+        separator = ttk.Separator(self.window, orient="horizontal")
+        separator.grid(row=3, column=0, sticky="ew", padx=10, pady=0)
 
         ########################################################################
         ################### 测距显示group_distance_display ######################
